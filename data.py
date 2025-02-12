@@ -11,24 +11,22 @@ class TwitterData:
         # Loading environment variables from .env file
         load_dotenv()
 
-        api_key = os.getenv('API_KEY')
-        api_secret_key = os.getenv('API_SECRET_KEY')
-        access_token = os.getenv('ACCESS_TOKEN')
-        access_token_secret = os.getenv('ACCESS_TOKEN_SECRET')
+        bearer_token = os.getenv('BEARER_TOKEN')
 
-        # Authenticate to Twitter
-        auth = tweepy.OAuth1UserHandler(api_key, api_secret_key, access_token, access_token_secret)
-        api = tweepy.API(auth)
+        # Authenticate to Twitter using Bearer Token for API v2
+        client = tweepy.Client(bearer_token=bearer_token)
 
         # Generate random hashtags
         hashtags = ['#Putin', '#Zelensky', '#STAYWITHUKRAINE', '#WAR', '#RUSSIA', '#UKRAINE']
-        random_hashtags = random.sample(hashtags, num_of_tweets)
+        random_hashtag = random.choices(hashtags, k=1)
 
         tweets = []
-        for hashtag in random_hashtags:
-            for tweet in tweepy.Cursor(api.search_tweets, q=hashtag, lang="en").items(num_of_tweets):
-                if len(tweet.text.split()) <= num_of_words:
-                    tweets.append(tweet._json)
+        query = f"{random_hashtag} lang:en"
+        response = client.search_recent_tweets(query=query, max_results=num_of_tweets)
+
+        for tweet in response.data:
+            if len(tweet.text.split()) >= num_of_words:
+                tweets.append(tweet.data)
 
         return tweets
 
