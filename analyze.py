@@ -2,16 +2,28 @@ import re
 import string
 from typing import List
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
-import nltk
 from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer
+from googletrans import Translator
+import sys
+sys.stdout.reconfigure(encoding='utf-8')
 
 
 class TextProcessor:
     def __init__(self):
         self.analyzer = SentimentIntensityAnalyzer()
+        self.language = 'english'
         self.stop_words = set(stopwords.words('english'))
         self.lemmatizer = WordNetLemmatizer()
+        self.translator = Translator()
+
+    def translate_to_english(self, text: str) -> str:
+        try:
+            translated = self.translator.translate(text, dest='en')
+            return translated.text
+        except Exception as e:
+            print(f"Translation error: {e}")
+            return text
 
     def clean_text(self, text: str) -> str:
         # Remove URLs, mentions, hashtags, and special characters
@@ -34,19 +46,14 @@ class TextProcessor:
         return tokens
 
     def analyze_sentiment(self, text: str) -> str:
+        # Translate text to English
+        translated_text = self.translate_to_english(text)
+
         # Clean, normalize, and tokenize text
-        cleaned_text = self.clean_text(text)
+        cleaned_text = self.clean_text(translated_text)
         normalized_text = self.normalize_text(cleaned_text)
-        tokens = self.tokenize_text(normalized_text)
-        processed_text = ' '.join(tokens)
 
         # Analyze sentiment
-        sentiment = self.analyzer.polarity_scores(processed_text)
-        compound_score = sentiment['compound']
+        sentiment = self.analyzer.polarity_scores(normalized_text)
         
-        if compound_score >= 0.05:
-            return 'Positive'
-        elif compound_score <= -0.05:
-            return 'Negative'
-        else:
-            return 'Neutral'
+        return sentiment
