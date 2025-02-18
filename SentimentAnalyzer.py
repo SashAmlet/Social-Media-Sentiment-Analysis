@@ -86,10 +86,10 @@ class RedditSentimentAnalyzer:
         plt.show()
 
     def generate_word_cloud(self, df, sentiment, country):
-        # Фильтрация данных по стране
+        # Filter data by country
         country_df = df[df['country'] == country]
         
-        # Фильтрация данных по sentiment
+        # Filtering data by sentiment
         if sentiment == 'Positive':
             filtered_df = country_df[country_df['sentiment'].apply(lambda x: max(x, key=x.get) == 'pos')]
         elif sentiment == 'Negative':
@@ -97,10 +97,10 @@ class RedditSentimentAnalyzer:
         else:
             filtered_df = country_df[country_df['sentiment'].apply(lambda x: max(x, key=x.get) == 'neu')]
 
-        # Объединение текстов
+        # Merging texts
         text = ' '.join(filtered_df['processed_text'])
 
-        # Генерация word cloud
+        # Generate word cloud
         wordcloud = WordCloud(width=800, height=400, background_color='white').generate(text)
         plt.figure(figsize=(10, 5))
         plt.imshow(wordcloud, interpolation='bilinear')
