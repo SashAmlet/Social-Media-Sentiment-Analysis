@@ -59,6 +59,6 @@ class TextProcessor:
         normalized_text = self.normalize_text(translated_text)
 
         # Analyze sentiment
-        sentiment = self.analyzer.polarity_scores(normalized_text)['compound']
+        sentiment = self.analyzer.polarity_scores(normalized_text)
         
         return sentiment

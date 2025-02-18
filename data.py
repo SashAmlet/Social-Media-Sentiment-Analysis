@@ -1,13 +1,9 @@
 import tweepy
 import json
-import random
 from dotenv import load_dotenv
 import os
 import praw
 import time
-import pandas as pd
-from datetime import datetime, timedelta
-import requests
 
 class GetData:
 
@@ -53,7 +49,7 @@ class GetData:
             json.dump(existing_tweets, file, indent=4)
 
     @staticmethod
-    def fetch_reddit_posts(num_ot_posts=10, num_ot_comments=5):
+    def fetch_reddit_posts(subreddits, num_ot_posts=10, num_ot_comments=5):
         
         # Loading environment variables from .env file
         load_dotenv()
@@ -67,16 +63,6 @@ class GetData:
             client_secret=REDDIT_CLIENT_SECRET,
             user_agent=REDDIT_USER_AGENT
         )
-        # Список сабреддитів для різних країн
-        subreddits = {
-            "USA": "usa",
-            "Russia": "AskARussian",
-            "Ukraine": "ukraine",
-            "UK": "unitedkingdom",
-            "Germany": "germany",
-            "France": "france",
-            "China": "china"
-        }
         
         posts = {}
     
@@ -84,19 +70,19 @@ class GetData:
             print(f"Fetching posts from {subreddit_name}...")
             country_posts = []
             
-            # Пошук постів з ключовим словом "Ukraine" у зазначених сабреддитах
+            # Search for posts with the keyword "Ukraine" in the specified subreddits
             for post in reddit.subreddit(subreddit_name).search("Ukraine", limit=num_ot_posts):
-                # Отримуємо перші n коментарів
-                post.comments.replace_more(limit=0)  # Це дозволяє отримати всі коментарі
-                comments = [comment.body for comment in post.comments[:num_ot_comments]]  # Беремо перші n коментарів
+                # We get the first n comments
+                post.comments.replace_more(limit=0)  # This allows you to get all the comments
+                comments = [comment.body for comment in post.comments[:num_ot_comments]]  # We take the first n comments
                 
-                # Преобразуем объект post в словарь, извлекая только нужные данные
+                # Convert the post object into a dictionary, extracting only the data we need
                 post_data = {
                     'subreddit': subreddit_name,
                     'title': post.title,
                     'url': post.url,
-                    'text': post.selftext,  # текст самого поста
-                    'comments': comments   # Додаємо коментарі
+                    'text': post.selftext,
+                    'comments': comments
                 }
                 country_posts.append(post_data)
                 time.sleep(0.1)
