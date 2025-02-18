@@ -3,8 +3,8 @@ import string
 from typing import List
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 from nltk.corpus import stopwords
-from nltk.stem import WordNetLemmatizer
-from googletrans import Translator
+import spacy
+from deep_translator import GoogleTranslator
 import sys
 sys.stdout.reconfigure(encoding='utf-8')
 
@@ -14,15 +14,14 @@ class TextProcessor:
         self.analyzer = SentimentIntensityAnalyzer()
         self.language = 'english'
         self.stop_words = set(stopwords.words('english'))
-        self.lemmatizer = WordNetLemmatizer()
-        self.translator = Translator()
+        self.nlp = spacy.load('en_core_web_sm')
 
     def translate_to_english(self, text: str) -> str:
         try:
-            translated = self.translator.translate(text, dest='en')
-            return translated.text
+            translated = GoogleTranslator(source='auto', target='en').translate(text)
+            return translated
         except Exception as e:
-            print(f"Translation error: {e}")
+            print(f"Translation error: {e}\nText: {text}")
             return text
 
     def clean_text(self, text: str) -> str:
@@ -35,9 +34,10 @@ class TextProcessor:
     def normalize_text(self, text: str) -> str:
         # Convert text to lower case
         text = text.lower()
-        # Remove stop words and perform lemmatization
-        tokens = text.split()
-        tokens = [self.lemmatizer.lemmatize(word) for word in tokens if word not in self.stop_words]
+        # Process text with spaCy
+        doc = self.nlp(text)
+        # Remove stop words and lemmatize
+        tokens = [token.lemma_ for token in doc if token.text not in self.stop_words and not token.is_punct]
         return ' '.join(tokens)
 
     def tokenize_text(self, text: str) -> List[str]:
@@ -46,14 +46,19 @@ class TextProcessor:
         return tokens
 
     def analyze_sentiment(self, text: str) -> str:
-        # Translate text to English
-        translated_text = self.translate_to_english(text)
+        # Clean text
+        cleaned_text = self.clean_text(text)
 
-        # Clean, normalize, and tokenize text
-        cleaned_text = self.clean_text(translated_text)
-        normalized_text = self.normalize_text(cleaned_text)
+        if len(cleaned_text) > 500:
+            cleaned_text = cleaned_text[:500] 
+
+        # Translate text to English
+        translated_text = self.translate_to_english(cleaned_text)
+
+        # Normalize text
+        normalized_text = self.normalize_text(translated_text)
 
         # Analyze sentiment
-        sentiment = self.analyzer.polarity_scores(normalized_text)
+        sentiment = self.analyzer.polarity_scores(normalized_text)['compound']
         
         return sentiment
