@@ -22,22 +22,24 @@ class RedditSentimentAnalyzer:
         for country, posts in self.data.items():
             for post in posts:
                 if post['text'] != '':
-                    sentiment = self.analyzer.analyze_sentiment(post['text'])
+                    sentiment, processed_text = self.analyzer.analyze_sentiment(post['text'])
                     if sentiment['compound'] != 0:
                         sentiments.append({
                             'country': country,
                             'title': post['title'],
                             'sentiment': sentiment,
-                            'text': post['text']
+                            'text': post['text'],
+                            'processed_text': processed_text
                         })
                 for comment in post['comments']:
-                    sentiment = self.analyzer.analyze_sentiment(comment)
+                    sentiment, processed_text = self.analyzer.analyze_sentiment(comment)
                     if sentiment['compound'] != 0:
                         sentiments.append({
                             'country': country,
                             'title': post['title'],
                             'sentiment': sentiment,
-                            'text': comment
+                            'text': comment,
+                            'processed_text': processed_text
                         })
 
 
@@ -96,7 +98,7 @@ class RedditSentimentAnalyzer:
             filtered_df = country_df[country_df['sentiment'].apply(lambda x: max(x, key=x.get) == 'neu')]
 
         # Объединение текстов
-        text = ' '.join(filtered_df['text'])
+        text = ' '.join(filtered_df['processed_text'])
 
         # Генерация word cloud
         wordcloud = WordCloud(width=800, height=400, background_color='white').generate(text)

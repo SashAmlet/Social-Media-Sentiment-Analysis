@@ -19,16 +19,30 @@ class TextProcessor:
     def translate_to_english(self, text: str) -> str:
         try:
             translated = GoogleTranslator(source='auto', target='en').translate(text)
+            if translated is None:
+                print(text)
             return translated
         except Exception as e:
             print(f"Translation error: {e}\nText: {text}")
             return text
 
     def clean_text(self, text: str) -> str:
+        # Remove newlines and other special characters
+        text = re.sub(r'\n', ' ', text)
+        text = re.sub(r'\r', ' ', text)
+        text = re.sub(r'\s+', ' ', text).strip()
+
         # Remove URLs, mentions, hashtags, and special characters
         text = re.sub(r'http\S+|www\S+|https\S+', '', text, flags=re.MULTILINE)
         text = re.sub(r'\@\w+|\#', '', text)
+        
+        # Remove punctuation
         text = text.translate(str.maketrans('', '', string.punctuation))
+        
+        # Remove emojis
+        text = re.sub(r'[^\w\s,]', '', text)
+        
+        
         return text
 
     def normalize_text(self, text: str) -> str:
@@ -39,11 +53,6 @@ class TextProcessor:
         # Remove stop words and lemmatize
         tokens = [token.lemma_ for token in doc if token.text not in self.stop_words and not token.is_punct]
         return ' '.join(tokens)
-
-    def tokenize_text(self, text: str) -> List[str]:
-        # Tokenize text
-        tokens = text.split()
-        return tokens
 
     def analyze_sentiment(self, text: str) -> str:
         # Clean text
@@ -61,4 +70,4 @@ class TextProcessor:
         # Analyze sentiment
         sentiment = self.analyzer.polarity_scores(normalized_text)
         
-        return sentiment
+        return sentiment, normalized_text

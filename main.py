@@ -21,4 +21,4 @@ subreddits = {
 
 
 analyzer = RedditSentimentAnalyzer('reddit_posts2.json', subreddits)
-analyzer.run_analysis(load_from_file=True, filename='sentiments_20250218_153956.json')
+analyzer.run_analysis(load_from_file=False, filename='sentiments_20250218_153956.json')
