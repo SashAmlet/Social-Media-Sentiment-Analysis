@@ -20,5 +20,5 @@ subreddits = {
 # GetData.save_reddit_posts(posts, 'reddit_posts2.json')
 
 
-analyzer = RedditSentimentAnalyzer('reddit_posts2.json', subreddits)
-analyzer.run_analysis(load_from_file=False, filename='sentiments_20250218_153956.json')
+analyzer = RedditSentimentAnalyzer('data\\input\\reddit_posts.json', subreddits)
+analyzer.run_analysis(load_from_file=True, filename='data\\processed_data\\sentiments_20250219_020548.json')
